@@ -17,10 +17,34 @@ cursor.execute('''
 conn.commit()
 
 def es_oracion_pasiva(oracion):
-    if re.search(r'\b(?:será|serán|fue|fueron|está|están|ha|es|ser|estar)\b', oracion) and re.search(r'\b\w+(?:ado|ada|idos|idas|ido|ada|tos|tas|so|sa|sos|sas|cho|cha|chos|chas)\b', oracion):
-        return True
-    else:
-        return False
+    # Patrones para verbos auxiliares y participios pasados
+    pat_auxiliares = r'\b(?:será|serán|fue|fueron|está|están|ha|es|ser|estar|fueron|era|sería|se\s+está\s+siendo)\b'
+    pat_participios = r'\b\w+(?:ado|ada|idos|idas|ido|ada|tos|tas|so|sa|sos|sas|cho|cha|chos|chas)\b'
+    
+    # Verificar verbos auxiliares y participios pasados
+    if re.search(pat_auxiliares, oracion) and re.search(pat_participios, oracion):
+        # Verificar presencia de "por" seguido de un grupo nominal
+        if re.search(r'\bpor\s+\w+\b', oracion):
+            # Verificar posición del objeto directo antes del verbo auxiliar
+            if re.search(r'\b\w+\b.*' + pat_auxiliares, oracion):
+                return True
+        # Verificar estructura pasiva sin "por" (algunas pasivas prescinden de este complemento)
+        elif re.search(r'\bse\s+' + pat_auxiliares, oracion):
+            return True
+        # Verificar estructura pasiva sin "se" ni "por" (algunas pasivas no usan "se")
+        elif re.search(r'\b\w+\b.*' + pat_auxiliares, oracion):
+            return True
+        # Verificar estructura pasiva con "se" seguido directamente de un verbo
+        elif re.search(r'\bse\s+' + pat_auxiliares, oracion):
+            return True
+        # Verificar estructura pasiva sin auxiliar explícito
+        elif re.search(r'\b\w+\b\s+' + pat_participios, oracion):
+            return True
+        # Nueva condición para capturar la estructura "se está + participio + por + agente"
+        elif re.search(r'\bse\s+está\s+' + pat_participios + r'\s+por\s+\w+\b', oracion):
+            return True
+    
+    return False
 
 def almacenar_en_bd(oracion):
     cursor.execute("INSERT INTO oraciones (oracion) VALUES (?)", (oracion,))
