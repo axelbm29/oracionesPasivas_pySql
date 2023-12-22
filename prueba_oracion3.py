@@ -50,13 +50,18 @@ def main():
 
     mostrar_oraciones()
 
-    # Eliminar oraciones por ID
-    st.header("Eliminar Oración por ID")
-    id_a_eliminar = st.number_input("Ingrese el ID de la oración a eliminar:", step=1)
-    id_a_eliminar = int(id_a_eliminar)  # Convertir a entero explícitamente
-    if st.button("Eliminar"):
-        eliminar_oracion_por_id(id_a_eliminar)
-        st.success(f"Oración con ID {id_a_eliminar} eliminada correctamente.")
+    # Eliminar oraciones por ID en la barra lateral
+    with st.sidebar:
+        st.header("Eliminar Oración por ID")
+        id_a_eliminar = st.number_input("Ingrese el ID de la oración a eliminar:", step=1)
+        id_a_eliminar = int(id_a_eliminar)  # Convertir a entero explícitamente
+        confirmado = st.checkbox("Confirmar eliminación")
+        if st.button("Eliminar"):
+            if confirmado:
+                eliminar_oracion_por_id(id_a_eliminar)
+                st.success(f"Oración con ID {id_a_eliminar} eliminada correctamente.")
+            else:
+                st.warning("Por favor, confirme la eliminación.")
 
 if __name__ == "__main__":
     main()
