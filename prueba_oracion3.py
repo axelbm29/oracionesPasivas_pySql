@@ -37,6 +37,11 @@ def mostrar_oraciones():
     st.write("\nContenido de la Base de Datos:")
     st.write(df)
 
+def verificar_existencia_id(id):
+    cursor.execute("SELECT COUNT(*) FROM oraciones WHERE id=?", (id,))
+    count = cursor.fetchone()[0]
+    return count > 0
+
 def main():
     st.title('Análisis de Oraciones Pasivas')
     oracion_ingresada = st.text_input("Ingrese una oración:")
@@ -56,10 +61,14 @@ def main():
         id_a_eliminar = st.number_input("Ingrese el ID de la oración a eliminar:", step=1)
         id_a_eliminar = int(id_a_eliminar)  # Convertir a entero explícitamente
         confirmado = st.checkbox("Confirmar eliminación")
+
         if st.button("Eliminar"):
             if confirmado:
-                eliminar_oracion_por_id(id_a_eliminar)
-                st.success(f"Oración con ID {id_a_eliminar} eliminada correctamente.")
+                if verificar_existencia_id(id_a_eliminar):
+                    eliminar_oracion_por_id(id_a_eliminar)
+                    st.success(f"Oración con ID {id_a_eliminar} eliminada correctamente.")
+                else:
+                    st.warning("No existe ese ID en la Base de Datos.")
             else:
                 st.warning("Por favor, confirme la eliminación.")
 
